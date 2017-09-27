@@ -1,6 +1,10 @@
-do.call(
+# functions & meta data ----
+source("functions.R")
+
+
+# all banzuke since 1991 ----
+banzuke <- do.call(
   rbind,
-  # all banzuke since 1991
   lapply(
     grep(
       "^\\d{6}\\.csv$",
@@ -15,7 +19,20 @@ do.call(
   mutate(
     rank = gsub("HD$", "", rank),
     rank = gsub("TD$", "", rank)
-  ) %>% 
+  )
+
+
+# order ranks ----
+ranks_ordered <- banzuke %>% 
+  select(rank) %>% 
+  unique() %>% 
+  mutate(rank_int = rank2int(rank)) %>% 
+  arrange(rank_int) %>% 
+  pull(rank)
+
+
+# main data set ----
+data <- banzuke %>% 
   # add column: next_basho
   inner_join(
     .,
@@ -40,6 +57,4 @@ do.call(
     rank < "J1e"
   ) %>% 
   # relevant columns
-  select(basho, rikishi, rank, w, l, new_rank) %>% 
-  # save
-  saveRDS("data.rds")
+  select(basho, rikishi, rank, w, l, new_rank)
